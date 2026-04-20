@@ -1,0 +1,21 @@
+/* Style cho Đơn hàng và in hóa đơn */
+.order-thermal-bill {
+    width: 80mm;
+    background: #fff;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #000;
+    margin: 0 auto;
+}
+.bill-header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+.bill-title { font-size: 1.2rem; font-weight: bold; }
+.bill-info { font-size: 0.8rem; margin-bottom: 5px; }
+.bill-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; }
+.bill-table th { text-align: left; border-bottom: 1px solid #000; }
+.bill-total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 5px; font-weight: bold; text-align: right; }
+
+@media print {
+    body * { visibility: hidden; }
+    #printableBill, #printableBill * { visibility: visible; }
+    #printableBill { position: absolute; left: 0; top: 0; width: 80mm; }
+}

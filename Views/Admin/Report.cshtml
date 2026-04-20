@@ -1,0 +1,159 @@
+@{
+    ViewData["Title"] = "Báo cáo & Thống kê";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    decimal totalRevenue = ViewBag.TotalRevenue ?? 0;
+    int totalOrders = ViewBag.TotalOrders ?? 0;
+    int successOrders = ViewBag.SuccessOrders ?? 0;
+    int cancelledOrders = ViewBag.CancelledOrders ?? 0;
+
+    double successRate = totalOrders > 0 ? Math.Round((double)successOrders / totalOrders * 100, 1) : 0;
+    double cancelRate = totalOrders > 0 ? Math.Round((double)cancelledOrders / totalOrders * 100, 1) : 0;
+
+    string filterStr = Context.Request.Query["filter"].ToString();
+    string chartTitle = "Doanh thu Tháng này";
+    if (filterStr == "week") chartTitle = "Doanh thu Tuần này";
+    else if (filterStr == "year") chartTitle = "Doanh thu Năm nay";
+}
+
+<style>
+    :root {
+        --cf-brown-dark: rgb(44, 26, 14);
+        --cf-brown-primary: rgb(139, 69, 19);
+        --cf-brown-light: rgb(200, 168, 128);
+        --cf-gold: rgb(200, 130, 26);
+    }
+    .report-container { display: flex; flex-direction: column; gap: 24px; padding-bottom: 30px; }
+    .welcome-widget {
+        background: linear-gradient(135deg, rgb(44, 26, 14) 0%, rgb(92, 51, 23) 60%, rgb(139, 69, 19) 100%);
+        border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: space-between;
+        position: relative; overflow: hidden; color: white; box-shadow: 0 10px 25px -5px rgba(139, 69, 19, 0.4);
+    }
+    .welcome-subtitle { font-size: 13px; color: var(--cf-brown-light); font-weight: 600; text-transform: uppercase; }
+    .welcome-title { font-size: 24px; font-weight: 800; color: #FFF; margin: 0; }
+    .welcome-desc { font-size: 14px; color: var(--cf-brown-light); }
+    .welcome-icon-box { width: 64px; height: 64px; border-radius: 16px; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi-card { border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; transition: 0.3s; }
+    .kpi-card:hover { transform: translateY(-3px); }
+    .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .kpi-val { font-size: 24px; font-weight: 800; }
+    .kpi-label { font-size: 13px; color: rgb(107, 76, 42); font-weight: 500; }
+
+    .kpi-revenue { background: rgb(254, 243, 226); border: 1px solid rgba(200, 130, 26, 0.15); }
+    .kpi-revenue .kpi-val { color: rgb(200, 130, 26); }
+    .kpi-orders { background: rgb(240, 253, 244); border: 1px solid rgba(22, 163, 74, 0.15); }
+    .kpi-orders .kpi-val { color: rgb(22, 163, 74); }
+    .kpi-cancel { background: rgb(254, 242, 242); border: 1px solid rgba(220, 38, 38, 0.15); }
+    .kpi-cancel .kpi-val { color: rgb(220, 38, 38); }
+    .kpi-success { background: rgb(236, 254, 255); border: 1px solid rgba(8, 145, 178, 0.15); }
+    .kpi-success .kpi-val { color: rgb(8, 145, 178); }
+
+    .white-box { background: #FFF; border: 1px solid rgb(232, 221, 208); border-radius: 16px; padding: 24px; }
+    .box-title { font-size: 17px; font-weight: 800; margin-bottom: 20px; }
+    .chart-container { position: relative; height: 320px; width: 100%; }
+    
+    .top-table { width: 100%; border-collapse: collapse; }
+    .top-table th { font-size: 12px; color: rgb(154, 122, 90); font-weight: 700; text-transform: uppercase; padding-bottom: 12px; border-bottom: 2px solid rgb(240, 232, 222); }
+    .top-table td { padding: 14px 0; border-bottom: 1px solid rgb(250, 245, 240); }
+    .rank-number { font-size: 15px; color: var(--cf-gold); font-weight: 800; }
+    .prod-rev { font-size: 14.5px; color: var(--cf-brown-primary); font-weight: 800; text-align: right; }
+
+    .progress-track { height: 8px; background: rgb(240, 232, 222); border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 10px; }
+</style>
+
+<div class="report-container">
+    <div class="welcome-widget">
+        <div class="welcome-content">
+            <p class="welcome-subtitle">Tổng quan</p>
+            <h1 class="welcome-title">Chào mừng trở lại, Admin! ☕</h1>
+            <p class="welcome-desc">Hôm nay là một ngày tuyệt vời để phát triển kinh doanh.</p>
+        </div>
+        <div class="welcome-icon-box"><i class="fa-solid fa-mug-hot"></i></div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-revenue"><div><p class="kpi-val">@totalRevenue.ToString("N0")đ</p><p class="kpi-label">Doanh thu kì này</p></div></div>
+        <div class="kpi-card kpi-orders"><div><p class="kpi-val">@totalOrders</p><p class="kpi-label">Tổng đơn hàng</p></div></div>
+        <div class="kpi-card kpi-cancel"><div><p class="kpi-val">@cancelledOrders</p><p class="kpi-label">Đơn đã huỷ</p></div></div>
+        <div class="kpi-card kpi-success"><div><p class="kpi-val">@successOrders</p><p class="kpi-label">Đơn thành công</p></div></div>
+    </div>
+
+    <div class="white-box">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <span class="box-title">@chartTitle</span>
+            <form action="" method="get">
+                <select name="filter" class="form-select form-select-sm" style="width: 130px; border-radius: 8px;" onchange="this.form.submit()">
+                    <option value="week" selected='@(filterStr == "week")'>Tuần này</option>
+                    <option value="month" selected='@(string.IsNullOrEmpty(filterStr) || filterStr == "month")'>Tháng này</option>
+                    <option value="year" selected='@(filterStr == "year")'>Năm nay</option>
+                </select>
+            </form>
+        </div>
+        <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="white-box h-100">
+                <h2 class="box-title">🏆 Top 5 Món Bán Chạy</h2>
+                <table class="top-table">
+                    <thead><tr><th>#</th><th>Tên món</th><th class="text-center">Số lượng</th><th class="text-end">Doanh thu</th></tr></thead>
+                    <tbody>
+                        @if (ViewBag.TopProducts != null) {
+                            int stt = 1;
+                            foreach (var item in ViewBag.TopProducts) {
+                                <tr><td class="rank-number">@stt</td><td class="prod-name">@item.ProductName</td><td class="text-center">@item.QuantitySold</td><td class="prod-rev">@item.Revenue.ToString("N0")đ</td></tr>
+                                stt++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="white-box h-100">
+                <h2 class="box-title">📊 Tỉ lệ xử lý đơn</h2>
+                <div class="mt-4">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1"><span class="text-sm font-semibold">Thành công</span><span>@successRate%</span></div>
+                        <div class="progress-track"><div class="progress-fill" style="width: @successRate%; background: var(--cf-brown-primary);"></div></div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1"><span class="text-sm font-semibold">Đơn huỷ</span><span>@cancelRate%</span></div>
+                        <div class="progress-track"><div class="progress-fill" style="width: @cancelRate%; background: rgb(239, 68, 68);"></div></div>
+                    </div>
+                    <div class="pt-3 border-top mt-4">
+                        <p class="text-sm text-gray-500 mb-0">Tổng đơn kì này</p>
+                        <p class="h4 font-bold text-brown-primary">@totalOrders đơn</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const labels = @Html.Raw(Json.Serialize(ViewBag.ChartLabels));
+        const data = @Html.Raw(Json.Serialize(ViewBag.DailyRevenue));
+        const ctxRev = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRev, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: data,
+                    borderColor: '#8B4513',
+                    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    });
+</script>

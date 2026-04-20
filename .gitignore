@@ -1,0 +1,23 @@
+## [Hỗ trợ ASP.NET Core]
+bin/
+obj/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+
+## [Cơ sở dữ liệu]
+*.db
+*.db-shm
+*.db-wal
+
+## [Thư mục build web]
+wwwroot/lib/
+node_modules/
+dist/
+
+## [File cấu hình cục bộ]
+appsettings.Development.json
+appsettings.Local.json
