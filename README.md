@@ -17,7 +17,7 @@ Website quản lý quán cà phê, hỗ trợ quản lý sản phẩm, khách h�
 - Fix bug và cải thiện chức năng
 
 ## ▶️ How to run
-1. Mở project bằng Visual Studio
+1. Mở project bằng Visual Studio Code
 2. Cấu hình database trong file appsettings.json
 3. Chạy project
 
